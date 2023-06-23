@@ -9,16 +9,18 @@ platform_plugin_definition = None
 
 def resolve_target(platform):
     resolved_target = platform
-    if 'StandaloneWindows' in platform:
+    if 'StandaloneWindows' in resolved_target:
         resolved_target = 'StandaloneWindows'
-    elif 'StandaloneLinux' in platform:
+    elif 'StandaloneLinux' in resolved_target:
         resolved_target = 'StandaloneLinux64'
 
     return resolved_target
 
 
 def create_config(settings_path, platform):
-    config_name = os.path.join(settings_path, 'BurstAotSettings_{}.json'.format(resolve_target(platform)))
+    config_name = os.path.join(
+        settings_path, f'BurstAotSettings_{resolve_target(platform)}.json'
+    )
     monobehaviour = {
         'm_Enabled': True,
         'm_EditorHideFlags': 0,
@@ -39,10 +41,14 @@ def get_or_create_AOT_config(project_path, platform):
     settings_path = os.path.join(project_path, 'ProjectSettings')
     if not os.path.isdir(settings_path):
         os.mkdir(settings_path)
-    config_names = [os.path.join(settings_path, filename) for filename in os.listdir(settings_path) if filename.startswith("BurstAotSettings_{}".format(resolve_target(platform)))]
-    if not config_names:
+    if config_names := [
+        os.path.join(settings_path, filename)
+        for filename in os.listdir(settings_path)
+        if filename.startswith(f"BurstAotSettings_{resolve_target(platform)}")
+    ]:
+        return config_names
+    else:
         return [create_config(settings_path, platform)]
-    return config_names
 
 
 def disable_AOT(project_path, platform):
@@ -77,7 +83,7 @@ def main():
         print('BURST COMPILATION: DISABLED')
         disable_AOT(args.project_path, args.platform)
     else:
-        sys.exit('BURST COMPILATION: unexpected value: {}'.format(enable_burst))
+        sys.exit(f'BURST COMPILATION: unexpected value: {enable_burst}')
 
 
 def parse_args():
